@@ -50,28 +50,14 @@ there is no way for us or ghc to know that somebody else will not define somethi
 
 We could just ignore this since it only happens with the empty list and querying an empty list is stupid anyway. However, since other functions such as insert can be done on an empty list and will work exactly the same we need to fix this.
 
-The fix I have come up with is to add a type family called Restrict and add it to the definition of Action
+The fix I have come up with is to expand the instance to include anypossible key and then after the instance is already matched to ensure that anykey is infact the right key.
 
-	type family RestrictAction object action
-	class (RestrictAction object action ~ (object,action)) => Action object action where
+	instance (anykey ~ key, Ord key) => Action (Map key value) anykey where
 	...
 
-Now let's add a restriction for Map and I will explain afterwards how it works.
+Ok. Now, if we query the empty list our instance will match,
 
-	type instance RestrictAction (Map key value) key' = (Map key value, key)
-
-Ok. Now, if we query the empty list, the type checker will look up Action and find that object and action have to match RestrictAction of object and action. They have the following types
-
-	empty :: Map key value
-	'f' :: Char
-
-so 
-
-	RestrictAction (Map key value) Char = (Map key value, key) ~ (Map key value, Char)
-
-Therefore, key is equal to Char and the Action instance we defined can be used without problem,
-
-	> empty Main.. 'f'
+	> empty . 'f'
 	*** Exception: no element of this key in map
 
 and the error we specified is raised. The astute reader may have noticed that we effectively prevented any other Action instance to be declared for Map. This issue will be discussed in a later section (hint: closed type families).
@@ -100,16 +86,20 @@ A still unresolved issue is how to automatically import only one of the two leng
 
 ## closed type families
 
-In ghc 7.7 closed type families were Introduced. They let us have general cases and more specific cases which overlap. So let's try it. Instead of the RestrictAction instance from above we use this.
+In ghc 7.7 closed type families were Introduced. They let us have general cases and more specific cases which overlap. in order for this to work we have to make output a separate type family that is not associated with Action.
 
-	type instance RestrictAction (Map key value) action = RestrictMap (Map key value) action
+	type family Output object action
+
+Now we can tell Output to use a closed typefamily in the case of object being Map.
+
+	type instance Output (Map a b) action = OutputMap
 	
-	type family RestrictMap (Map key value) action where
-		RestrictMap (Map k v) (Method a) = (Map k v, Method a) -- this is why we used the wraper
-		RestrictMap (Map k v) [k' := v'] = (Map k v,[k := v])
-		RestrictMap (Map k v) k' = (Map k v,k)
+	type family OutputMap where	
+		OutputMap (Map k v) (Method a) = Int
+		OutputMap (Map k v) [k' := v'] = Map k v
+		OutputMap (Map k v) k' = v
 
-Now, additionally there is some context shuffling and we have to take Output away into a separate type family so that the same closed type family procedure can be applied to it (these might all be just missing deductions in ghc). But after this is all done you do indeed end up with a working library that will enable you to write use maps exactly as in the first example. 
+Now, additionally there is some additional context shuffling . But after this is all done you do indeed end up with a working library that will enable you to write use maps exactly as in the first example. 
 
 ## WIP
 
