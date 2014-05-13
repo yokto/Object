@@ -8,7 +8,7 @@ import Control.Monad
 type family Restrict object action
 type family Output object action
 
-class (Restrict object action ~ (object,action)) => Action object action where
+class Action object action where
 	(.) :: object -> action -> Output object action
 
 data a := b = a := b deriving (Show,Read,Eq)

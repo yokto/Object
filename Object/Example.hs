@@ -83,17 +83,6 @@ main = do
 	print map3
 	print res3
 
-
-type instance Restrict (Map k v) action = RestrictMap (Map k v) action
-
-type family RestrictMap map action where
-	RestrictMap (Map k v) (Method a) = (Map k v, Method a)
-	RestrictMap (Map k v) [k' := v'] = (Map k v,[k := v])
-	RestrictMap (Map k v) (k' := v') = (Map k v,(k := v))
-	RestrictMap (Map k v) (Maybe k') = (Map k v,Maybe k)
-	RestrictMap (Map k v) [k'] = (Map k v,[k])
-	RestrictMap (Map k v) k' = (Map k v,k)
-
 type instance Output (Map k v) action = OutputMap (Map k v) action
 
 type family OutputMap map action where
@@ -104,19 +93,19 @@ type family OutputMap map action where
 	OutputMap (Map k v) k' = v
 
 	
-instance (Restrict (Map k v) [k := v] ~ (Map k v,[k := v]),Ord k) => Action (Map k v) [k := v] where
+instance (k~k', v~v', OutputMap (Map k v) [k' := v'] ~ (Map k v), Ord k) => Action (Map k v) [k' := v'] where
 	map . (k := v:rest) = insert k v map . rest
 	map . [] = map
 
-instance (Restrict (Map k v) (k := v) ~ (Map k v,(k := v)),Ord k) => Action (Map k v) (k := v) where
+instance (k~k', v~v', OutputMap (Map k v) (k' := v') ~ (Map k v), Ord k) => Action (Map k v) (k' := v') where
 	map . assign = map . [assign]
 
-instance (Restrict (Map k v) (Maybe k) ~ (Map k v,(Maybe k)),Ord k) => Action (Map k v) (Maybe k) where
+instance (k~k', v~v', OutputMap (Map k v) (Maybe k') ~ (Maybe v), Ord k) => Action (Map k v) (Maybe k') where
 	map . (Just key) = Data.Map.lookup key map
 	map . Nothing = Nothing
 
-instance (Restrict (Map k v) [k] ~ (Map k v,[k]),	OutputMap (Map k v) [k] ~ [v],Ord k) => Action (Map k v) [k] where
+instance (k~k', v~v', OutputMap (Map k v) [k'] ~ [v], Ord k) => Action (Map k v) [k'] where
 	map . keys = catMaybes $ flip Data.Map.lookup map $< keys
 
-instance (Restrict (Map k v) k ~ (Map k v,k),OutputMap (Map k v) k ~ v,Ord k) => Action (Map k v) k where
+instance (k~k', v~v', OutputMap (Map k v) k' ~ v, Ord k) => Action (Map k v) k' where
 	map . key = fromMaybe (error "no element of this key in map") $ map . Just key
