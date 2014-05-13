@@ -100,12 +100,12 @@ instance (k~k', v~v', OutputMap (Map k v) [k' := v'] ~ (Map k v), Ord k) => Acti
 instance (k~k', v~v', OutputMap (Map k v) (k' := v') ~ (Map k v), Ord k) => Action (Map k v) (k' := v') where
 	map . assign = map . [assign]
 
-instance (k~k', v~v', OutputMap (Map k v) (Maybe k') ~ (Maybe v), Ord k) => Action (Map k v) (Maybe k') where
+instance (k~k', OutputMap (Map k v) (Maybe k') ~ (Maybe v), Ord k) => Action (Map k v) (Maybe k') where
 	map . (Just key) = Data.Map.lookup key map
 	map . Nothing = Nothing
 
-instance (k~k', v~v', OutputMap (Map k v) [k'] ~ [v], Ord k) => Action (Map k v) [k'] where
+instance (k~k', OutputMap (Map k v) [k'] ~ [v], Ord k) => Action (Map k v) [k'] where
 	map . keys = catMaybes $ flip Data.Map.lookup map $< keys
 
-instance (k~k', v~v', OutputMap (Map k v) k' ~ v, Ord k) => Action (Map k v) k' where
+instance (k~k', OutputMap (Map k v) k' ~ v, Ord k) => Action (Map k v) k' where
 	map . key = fromMaybe (error "no element of this key in map") $ map . Just key
