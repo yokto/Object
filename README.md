@@ -7,6 +7,8 @@ You should be able to:
 	cabal install Object
 if you have >= ghc-7.8
 
+the doku is also on the gh-pages branch or on (http://yokto.github.io/object/)
+
 ## Idea
 
 The idea is to be able to use multiparameter typeclasses to create a dot operator which can access certain properties of the object/datatype. We give a simple example of the kind of thing that we want to be able to write the following.
