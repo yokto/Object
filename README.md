@@ -4,9 +4,13 @@ Object oriented programming for haskell
 
 ## Idea
 
-The idea is to be able to use multiparameter typeclasses to create a dot operator which can access certain properties of the object/datatype. We give a simple example of the kind of thing that we want to be able to write.
+The idea is to be able to use multiparameter typeclasses to create a dot operator which can access certain properties of the object/datatype. We give a simple example of the kind of thing that we want to be able to write the following.
 
-	> import Data.Map
+	> :m -Prelude
+	> import Prelude hiding ((.))
+	> import Object
+	> import Object.Example
+	> import Data.Map hiding (size)
 	> let m = empty . [ 'f' := Just 1, 'o' := Just 2, 'o' := Nothing ]
 	> m
 	fromList [('f',Just 1),('o',Nothing)]
@@ -14,6 +18,8 @@ The idea is to be able to use multiparameter typeclasses to create a dot operato
 	Just 1
 	> m . size
 	2
+
+You can run this example in ghci it should work you need ghc-7.8.
 
 Ok so let us define the dot
 
