@@ -3,6 +3,10 @@
 Object oriented programming for haskell.
 For more information you can also look at the *Object.Example* file.
 
+You should be able to:
+	cabal install Object
+if you have >= ghc-7.8
+
 ## Idea
 
 The idea is to be able to use multiparameter typeclasses to create a dot operator which can access certain properties of the object/datatype. We give a simple example of the kind of thing that we want to be able to write the following.
