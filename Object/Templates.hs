@@ -1,4 +1,4 @@
-{-# LANGUAGE TemplateHaskell, MultiParamTypeClasses, TypeFamilies, FlexibleInstances, RankNTypes, OverlappingInstances, TypeOperators #-}
+{-# LANGUAGE TemplateHaskell, MultiParamTypeClasses, TypeFamilies, FlexibleInstances, OverlappingInstances, TypeOperators, PatternGuards #-}
 module Object.Templates(
 	makeName,
 	makeObject,

@@ -1,3 +1,8 @@
-module Object where
+-- | This module Just reexports Object.Types and Object.Templates
+module Object(
+    module Object.Types,
+    module Object.Templates
+    ) where
 
--- This module will eventually export others
+import Object.Types
+import Object.Templates
