@@ -6,7 +6,8 @@ License-File:	LICENSE
 Author:		Silvio Frischknecht
 Homepage:	https://github.com/yokto/object
 Category:	Data, Control
-Synopsis:	Object oriented programming for haskell using multiparameter typeclasses
+Synopsis:	Object oriented programming for haskell using multiparameter typeclasses.
+	Read the homepage or Object.Example for more information.
 Build-Type:	Simple
 
 Library

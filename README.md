@@ -1,6 +1,7 @@
 # object
 
-Object oriented programming for haskell
+Object oriented programming for haskell.
+For more information you can also look at the *Object.Example* file.
 
 ## Idea
 
