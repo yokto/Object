@@ -12,7 +12,7 @@ The idea is to be able to use multiparameter typeclasses to create a dot operato
 	fromList [('f',Just 1),('o',Nothing)]
 	> m . 'f'
 	Just 1
-	> m . length
+	> m . size
 	2
 
 Ok so let us define the dot
@@ -64,25 +64,25 @@ and the error we specified is raised. The astute reader may have noticed that we
 
 ## Name collision
 
-One of the really big things about object oriented programming is that names can be reused among different objects and don't need prefixes. So how can we achieve it that two models, say List and Map, who don't know about each other can both declare some length thing that can be used in a third module to act both on List and Map without prefix. Easy length has to be the same thing in both cases. Suppose we have a central module where all letters have types as follows.
+One of the really big things about object oriented programming is that names can be reused among different objects and don't need prefixes. So how can we achieve it that two models, say List and Map, who don't know about each other can both declare some size thing that can be used in a third module to act both on List and Map without prefix. Easy size has to be the same thing in both cases. Suppose we have a central module where all letters have types as follows.
 
-	data L_a = L_a
-	data L_b = L_b
-	data L_c = L_c
+	data T_a = T_a
+	data T_b = T_b
+	data T_c = T_c
 	...
 
-Now we can define length in both List and Map
+Now we can define size in both List and Map
 
-	length = (L_l,L_e,L_n,L_g,L_t,L_h)
+	size = (T_s,T_i,T_z,T_e)
 
-And to use any Action defined for length, you can use either the length in Map or the length in List. The definition of length can be automatized using template haskell. We also usually provide a type synonym and wrap the tuple to make our life later on more easy.
+And to use any Action defined for size, you can use either the size in Map or the size in List. The definition of size can be automatized using template haskell. We also usually provide a type synonym and wrap the tuple to make our life later on more easy.
 
 	newtype Method a = Method a -- in central module
 	
-	type Length = (L_l,L_e,L_n,L_g,L_t,L_h)
-	length = Method Length
+	type Size_ = Method (L_l,L_e,L_n,L_g,L_t,L_h)
+	size = Method (T_s,T_i,T_z,T_e) :: Size_
 
-A still unresolved issue is how to automatically import only one of the two length variables. As of now you just have to hide one explicitly.
+A still unresolved issue is how to automatically import only one of the two size variables. As of now you just have to hide one explicitly.
 
 ## closed type families
 
