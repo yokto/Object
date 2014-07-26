@@ -8,6 +8,7 @@ module Object(
 import Object.Types
 import Object.Templates
 
-type instance Output (b -> c) (a -> b') = (a -> c)
-instance (b ~ b') => Action (b -> c) (a -> b') where
+-- |
+-- function composition
+instance (a~a', b' ~ b, c'~c) => Action (b -> c) (a -> b') (a' -> c') where
 	f . g = f Prelude.. g

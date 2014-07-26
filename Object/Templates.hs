@@ -1,8 +1,9 @@
-{-# LANGUAGE TemplateHaskell, MultiParamTypeClasses, TypeFamilies, FlexibleInstances, OverlappingInstances, TypeOperators, PatternGuards #-}
+{-# LANGUAGE
+	TemplateHaskell,
+	TypeOperators #-}
 module Object.Templates(
 	makeName,
-	makeObject,
-	makeObjectFlexible
+	makeObject
 	) where
 
 import Object.Letters
@@ -19,7 +20,7 @@ import Data.Maybe
 -- 'type Foo = Method (T_f,T_o,T_o)'
 -- 'foo = Method (T_f,T_o,T_o) :: Foo'
 makeName :: String -> Q [Dec]
-makeName name = makeName' name *> fst
+makeName name = fst `fmap` makeName' name
 
 makeName' :: String -> Q ([Dec],(Name,Name))
 makeName' name = go where
@@ -65,47 +66,28 @@ getFieldName (fieldName,strictness,type')
 -- and produces
 -- set and get instances for all fields
 makeObject :: Name -> Q [Dec]
-makeObject = makeObject' False
-
-makeObjectFlexible = makeObject' True
-
--- |
--- implements 'makeObject' or 'makeObjectFlexible' depending on the first argument
-makeObject' :: Bool -> Name -> Q [Dec]
-makeObject' flexible name = go name where
+makeObject name = go name where
 	go :: Name -> Q [Dec]
 	go obj = do
 		(name, vars, fields) <- reify name >>= getInfo
-		let objType = foldl AppT (ConT name) (VarT<*vars)
-		outputDecls <- if flexible
-			then return []
-			else [d|
-				type instance Output $(return objType) (Method m) =
-					MethodOutput $(return objType) (Method m)
-				type instance Output $(return objType) (Method m := input) =
-					MethodOutput $(return objType) (Method m := input)
-				|]
-		fieldDecls <- (sequence $ makeField name vars <* fields) *> concat
-		return $ outputDecls ++ fieldDecls
+		let objType = foldl AppT (ConT name) (VarT `fmap` vars)
+		concat `fmap` (sequence $ makeField name vars `fmap` fields)
 -- "(Object.Example.Foo,[x_1627454179],[(Object.Example._bar,NotStrict,ConT GHC.Types.Int),(Object.Example._baz,NotStrict,ConT GHC.Types.Char),(Object.Example._blub,NotStrict,VarT x_1627454179)])"
 	makeField ::  Name -> [Name] -> VarStrictType -> Q [Dec]
 	makeField _ _ (name,_,_) | '_' /= head (nameBase name) = fail $ show name ++ " did not start with underscore"
 	makeField name vars (fName, _, fType) = do
 		(decs1,(typeName,dataName)) <- makeName' (tail $ nameBase fName)
-		methodOutput <- lookupTypeName "Object.Types.MethodOutput" *> fromMaybe (error "no MethodOutput in scope")
-		let objType = foldl AppT (ConT name) (VarT<*vars)
+		let objType = foldl AppT (ConT name) (VarT `fmap` vars)
 
-		let methodOutInst = TySynInstD methodOutput $ TySynEqn [objType, ConT typeName] fType
 		actionInst <- [d|
-			instance Action $(return objType) $(return $ ConT typeName) where
+			instance (value ~ $(return fType)) => Action $(return objType) $(return $ ConT typeName) value where
 				object . _ = $(return $ VarE fName) object
 			|]
 
 		matchType <- [t| $(return $ ConT typeName) := $(return $ VarT $ mkName "value") |]
-		let methodSetOutInst = TySynInstD methodOutput $ TySynEqn [objType, matchType] objType
 		actionSetInst <- [d|
-			instance (value ~ $(return fType)) => Action $(return objType) $(return matchType) where
+			instance (value ~ $(return fType), object ~ $(return objType)) => Action $(return objType) $(return matchType) object where
 				object . ( _ := v) = $(recUpdE [e|object|] [return (fName, VarE $ mkName "v")])
 			|]
 
-		return $ [methodOutInst,methodSetOutInst] ++ actionInst ++ actionSetInst ++ decs1
+		return $ actionInst ++ actionSetInst ++ decs1
