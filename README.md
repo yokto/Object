@@ -13,7 +13,7 @@ You should be able to:
 	cabal install Object
 if you have >= ghc-7.8
 
-The API is also on the gh-pages branch or on (http://yokto.github.io/object/)
+The API is also on the gh-pages branch or on (http://yokto.github.io/Object/)
 
 ## Idea
 
